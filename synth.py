@@ -122,6 +122,6 @@ class dx7_synth():
     
     f0 = 440*2**((note_contour-69)/12)
     envelopes = rearrange(envelopes,"oscillators frames -> frames oscillators")
-    audio = self.render_from_continuous_data(f0,envelopes)
+    audio = self.render_from_osc_envelopes(f0,envelopes)
 
     return audio
