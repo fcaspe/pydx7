@@ -67,19 +67,25 @@ TODO: Incorporate:
                       long bass decay and a short treble decay - as in an acoustic piano")
     - OP Detune parameter
 '''
-def load_patch(patch_file,patch_number=0,load_from_sysex=False):
+def load_patch_from_bulk(patch_file,patch_number=0,load_from_sysex=False):
 
-    specs = {}
     bulk_patches = np.fromfile(patch_file, dtype=np.uint8)
-    n_patches = int(len(bulk_patches)/128)
 
     patch_offset = 6 if load_from_sysex==True else 0
     for i in [patch_number]:
         patch = bulk_patches[patch_offset + i*128:patch_offset+ (i+1)*128]
-        patch_name = bulk_patches[patch_offset + i*128 + 118: patch_offset + i*128 + 127]
-        #patch_name = np.array(patch[118:127],dtype=np.uint8)
-        patch_name = patch_name * ( patch_name < 128)
-        specs['name'] = patch_name.tostring().decode('ascii')
+
+    return load_patch(patch)
+
+def load_patch(patch : np.array):
+
+    specs = {}
+    # Store binary data from patch.
+    specs['binary'] = patch
+
+    patch_name = patch[118:127]
+    patch_name = patch_name * ( patch_name < 128)
+    specs['name'] = patch_name.tostring().decode('ascii')
 
     patch = unpack_packed_patch(patch)
     algorithm = patch[134]
@@ -126,10 +132,10 @@ def load_patch(patch_file,patch_number=0,load_from_sysex=False):
     specs['outmatrix'] = get_outmatrix(algorithm)
     return specs
 
-""" Stub function that generates only 1 alg
-
-"""
-def get_modmatrix(algorithm):
+def get_modmatrix(algorithm: int) -> np.array:
+    """
+        Returns the modulation matrix corresponding to the algorithm selected.
+    """
     alg = []
     # alg 1       OP1            OP2            OP3            OP4            OP5            OP6
     alg.append([ [0,1,0,0,0,0], [0,0,0,0,0,0], [0,0,0,1,0,0], [0,0,0,0,1,0], [0,0,0,0,0,1], [0,0,0,0,0,0] ])    
