@@ -98,12 +98,14 @@ def load_patch(patch : np.array):
 
     # https://homepages.abdn.ac.uk/d.j.benson/pages/dx7/sysex-format.txt
     # Load OP output level, EG rates and levels
+    has_fixed_freqs = False
     for op in range(6):
         # First in file is OP6
         off = op*21
         is_fixed = patch[off+17]
         if(is_fixed):
-            print("[WARNING] tools.py: OP{} in {} is FIXED.".format(6-op,patch_name))
+            #print("[WARNING] tools.py: OP{} in {} is FIXED.".format(6-op,patch_name))
+            has_fixed_freqs = True
 
         ol[5-op] = patch[off+16]
         sensitivity[5-op] = patch[off+15]
@@ -130,6 +132,7 @@ def load_patch(patch : np.array):
     specs['sensitivity'] = sensitivity
     specs['algorithm'] = algorithm #0-31
     specs['outmatrix'] = get_outmatrix(algorithm)
+    specs['has_fixed_freqs'] = has_fixed_freqs
     return specs
 
 def get_modmatrix(algorithm: int) -> np.array:
