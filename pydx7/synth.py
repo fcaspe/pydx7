@@ -94,8 +94,9 @@ class dx7_synth():
     f0_up = upsample(f0,self.block_size)
     print(f0_up.shape)
     print(ol_up.shape)
-    return dx7_numba_render(self.fr,self.modmatrix,self.outmatrix,
+    render = dx7_numba_render(self.fr,self.modmatrix,self.outmatrix,
                     f0_up,ol_up,self.sr,self.scale)
+    return render / (4*sum(self.outmatrix))
 
 
   """ Renders audio from a sequence of midi notes
