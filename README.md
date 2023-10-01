@@ -11,6 +11,10 @@ Clone this repository and run
 pip install -e
 ```
 
+## Acknowledgements
+ - The DX7 Envelope Generator implementation was adapted from [Dexed](https://github.com/asb2m10/dexed)
+ - The patch unpacking routine was adapted from [learnfm](https://github.com/bwhitman/learnfm)
+
 ## Citation
 If you find this work useful, please consider citing us:
 
