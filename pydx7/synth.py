@@ -17,13 +17,13 @@ def upsample(signal, factor):
       interpolated = np.interp(xvals,x,signal)
     return interpolated
 
-"""
-DX7 Renderer with numba
-"""
+
 @njit
 def dx7_numba_render(fr : np.array, modmatrix : np.array, outmatrix : np.array,
                      pitch : np.array , ol : np.array, sr : int, scale : float = 2*np.pi):
-    
+    """
+    6-operator FM Renderer with numba
+    """    
     n_op = len(fr)
     out = np.zeros_like(pitch)
     phases = np.zeros(n_op) # The free runnin phase
@@ -81,15 +81,15 @@ class dx7_synth():
     self.sr = sr
     self.block_size = block_size
   
-  """ Renders from a sequence of output levels and f0
-      Args:
-        f0: Fudamental frequency vector of size seq_len
-        ol: Oscillator output levels format [seq_len,n_osc]
-        block_size : int 
-        sr: sample rate in Hz.
-  """
   def render_from_osc_envelopes(self,f0: np.array,ol: np.array):
-
+    """
+    Renders from a sequence of output levels and f0
+    Args:
+      f0: Fudamental frequency vector of size seq_len
+      ol: Oscillator output levels format [seq_len,n_osc]
+      block_size : int 
+      sr: sample rate in Hz.
+    """
     ol_up = upsample(ol,self.block_size)
     f0_up = upsample(f0,self.block_size)
     print(f0_up.shape)
@@ -98,13 +98,12 @@ class dx7_synth():
                     f0_up,ol_up,self.sr,self.scale)
     return render / (4*sum(self.outmatrix))
 
-
-  """ Renders audio from a sequence of midi notes
-      Args:
-        midi_sequence: List of midi_note objects
-  """
   def render_from_midi_sequence(self,midi_sequence):
-
+    """ 
+    Renders audio from a sequence of midi notes
+    Args:
+      midi_sequence: List of midi_note objects
+    """
     envelopes = np.empty((6,0))
     note_contour = np.empty(0)
     

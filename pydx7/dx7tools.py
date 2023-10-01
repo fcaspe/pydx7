@@ -1,8 +1,21 @@
 import numpy as np
-from pydx7.dx7env import scalevelocity,scaleoutlevel,EnvelopeGenerator
+from pydx7.dx7env import scalevelocity, scaleoutlevel, EnvelopeGenerator
 
-def render_env(rate,level,ol:int,sens,velocity:int,frames_on:int,frames_off:int,qenvelopes_ratio:float=1.0):
-
+def render_env(rate,level,ol:int,sens,velocity:int,frames_on:int,
+               frames_off:int,qenvelopes_ratio:float=1.0):
+    '''
+    Renders a single oscillator envelope from a set 
+    of Envelope Generator settings. The envelopes are rendered 
+    in doubling log format (i.e in log2 space).
+        rate: specifies the speed of rising/decay of the envelope
+        level: the target value for the envelope to arrive to
+        ol: Oscillator output level
+        sens: keyboard sensitivity wrt velocity
+        velocity: MIDI Velocity
+        frames_on: n. frames to run the envelope on NOTE_ON
+        frames_off: n. frames to run the envelope on NOTE_OFF
+        qenvelopes_ratio: a multiplier for the envelopes in log format
+    '''
     output_level = scaleoutlevel(ol)
     output_level = output_level << 5
     output_level += scalevelocity(velocity, sens)
@@ -42,7 +55,14 @@ def render_env(rate,level,ol:int,sens,velocity:int,frames_on:int,frames_off:int,
 
 def render_envelopes(specs,velocity,frames_on,frames_off,
     qenvelopes_ratio=[1.0,1.0,1.0,1.0,1.0,1.0]):
-
+    '''
+    Generates the oscillator envelopes given:
+        specs: the patch structure
+        velocity: MIDI velocity value
+        frames_on: number of frames after a NOTE_ON is sent
+        frames_off: number of frames generating after NOTE_OFF is sent
+    
+    '''
     envelopes = np.zeros([6,frames_on + frames_off])
     qenvelopes = np.zeros([6,frames_on + frames_off])
     for i in range(6):
@@ -61,14 +81,19 @@ def render_envelopes(specs,velocity,frames_on,frames_off,
 
 
 # Loads the first patch
-'''
-TODO: Incorporate:  
-    - KB RATE Scaling (from dx7 users manual: "The EG for each operator can be set for a
-                      long bass decay and a short treble decay - as in an acoustic piano")
-    - OP Detune parameter
-'''
-def load_patch_from_bulk(patch_file,patch_number=0,load_from_sysex=False):
 
+def load_patch_from_bulk(patch_file,patch_number:int = 0,load_from_sysex=False):
+    '''
+    TODO: Incorporate:  
+        - KB RATE Scaling (from dx7 users manual: "The EG for each operator can be set for a
+                        long bass decay and a short treble decay - as in an acoustic piano")
+        - OP Detune parameter
+    
+    Args:
+        patch_file: Path to dx7 cart file
+        patch_number: Position of patch within cart
+        load_from_sysex: Set it to 'True' when cart file is a sysex dump
+    '''
     bulk_patches = np.fromfile(patch_file, dtype=np.uint8)
 
     patch_offset = 6 if load_from_sysex==True else 0
@@ -78,7 +103,9 @@ def load_patch_from_bulk(patch_file,patch_number=0,load_from_sysex=False):
     return load_patch(patch)
 
 def load_patch(patch : np.array):
-
+    '''
+    Unpacks patch array from cart file and generates a patch structure (called here 'spec')
+    '''
     specs = {}
     # Store binary data from patch.
     specs['binary'] = patch
@@ -267,16 +294,22 @@ def get_outmatrix(algorithm):
     return np.array(outmatrix[algorithm])
 
 def compute_freq(coarse,fine,detune):
+    '''
+    Converts from DX7 format to a floating point frequency ratio.
+    '''
     # TODO detune parameter is -7 to 7 cents (not implemented)
     f = coarse
     if (f==0): f = 0.5
     f = f + (f/100)*fine
     return f
 
-# Nice unpacking method extracted from https://github.com/bwhitman/learnfm
+# Nice unpacking method adapted from https://github.com/bwhitman/learnfm
 def unpack_packed_patch(p):
-    # Input is a 128 byte thing from compact.bin
-    # Output is a 156 byte thing that the synth knows about
+    ''' 
+    p: is a 128 byte array extracted from the DX7 cart.
+    Returns:
+        a parsed 156 byte array that can be easily processed.
+    '''
     o = [0]*156
     for op in range(6):
         o[op*21:op*21 + 11] = p[op*17:op*17+11]
