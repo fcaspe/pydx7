@@ -8,7 +8,8 @@ This was developed as a data generator for the [fmtransfer](https://github.com/f
 
 Clone this repository and run
 ```bash
-pip install -e
+pip install -e .
+pip install -r requirements.txt
 ```
 
 ## Acknowledgements
